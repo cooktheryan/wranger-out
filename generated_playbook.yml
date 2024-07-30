@@ -1,0 +1,18 @@
+---
+Sure, here is an Ansible playbook that restarts the `httpd` service on the server with the IP address `192.168.1.133`:
+
+
+---
+- name: Restart httpd service
+  hosts: 192.168.1.133
+  tasks:
+    - name: Restart httpd service
+      service:
+        name: httpd
+        state: restarted
+
+
+You can save this playbook to a file, for example, `restart_httpd.yaml`, and run it using the `ansible-playbook` command:
+
+bash
+ansible-playbook restart_httpd.yaml
