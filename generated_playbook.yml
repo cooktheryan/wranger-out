@@ -1,0 +1,8 @@
+---
+- name: Restart httpd service on server 192.168.1.133
+  hosts: 192.168.1.133
+  tasks:
+    - name: Restart httpd service
+      service:
+        name: httpd
+        state: restarted
