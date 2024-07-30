@@ -1,0 +1,15 @@
+---
+- name: Restart httpd service
+  hosts: 192.168.1.133
+  tasks:
+    - name: Ensure httpd service is running
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+        runlevel: 3
+
+    - name: Restart httpd service
+      service:
+        name: httpd
+        state: restarted
