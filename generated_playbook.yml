@@ -1,0 +1,19 @@
+---
+---
+- name: Ensure httpd service is reporting it is running on 192.168.1.100
+  hosts: 192.168.1.100
+  tasks:
+    - name: Ensure httpd service is running
+      service:
+        name: httpd
+        state: started
+
+    - name: Check if httpd is reporting on 192.168.1.100
+      uri:
+        url: http://localhost/server-status
+        method: GET
+      register: response
+
+    - name: Print httpd status on 192.168.1.100
+      debug:
+        msg: "{{ response }}"
