@@ -1,0 +1,8 @@
+---
+---
+- name: Notify incident creation
+  hosts: localhost
+  tasks:
+    - name: Send notification about incident creation
+      debug: 
+        msg: "User xgzswexqyk7r successfully created a new incident!"
