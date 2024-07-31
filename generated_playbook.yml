@@ -1,0 +1,28 @@
+---
+Certainly! Please find the Ansible playbook below that achieves the desired outcome:
+
+
+---
+- name: Updating httpd to the latest version on systems with httpd installed
+  hosts: all
+  become: true  # Ensure privilege escalation
+
+  tasks:
+    - name: Update cache for package manager
+      package:
+        name: ''
+        update_cache: yes
+
+    - name: Check if httpd is installed
+      command: rpm -q httpd
+      register: httpd_check
+      ignore_errors: yes
+
+    - name: Update httpd if installed
+      package:
+        name: httpd
+        state: latest
+      when: httpd_check.rc == 0
+
+
+Save this code in a file, for example, `update_httpd.yml`, and run it using the command `ansible-playbook update_httpd.yml`. This playbook will update httpd to the latest version only on systems where httpd is already installed.
