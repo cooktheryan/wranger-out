@@ -1,0 +1,9 @@
+---
+- name: Restart httpd service on server 192.168.1.100
+  hosts: 192.168.1.100
+  become: yes
+  tasks:
+    - name: Ensure httpd service is running
+      service:
+        name: httpd
+        state: started
