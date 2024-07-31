@@ -1,0 +1,15 @@
+---
+---
+- name: Update httpd to the latest version on hosts where httpd is installed
+  hosts: all
+  tasks:
+    - name: Check if httpd package is installed
+      command: "rpm -q httpd"
+      ignore_errors: true
+      register: httpd_status
+
+    - name: Update httpd package to the latest version
+      yum:
+        name: httpd
+        state: latest
+      when: httpd_status.rc == 0
