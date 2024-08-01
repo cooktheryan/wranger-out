@@ -1,0 +1,15 @@
+---
+- name: Update httpd to the latest version
+  hosts: all
+  become: yes
+  tasks:
+    - name: Check if httpd is installed
+      yum:
+        list: httpd
+      register: httpd_pkg
+
+    - name: Update httpd package
+      yum:
+        name: httpd
+        state: latest
+      when: httpd_pkg.results | length > 0
