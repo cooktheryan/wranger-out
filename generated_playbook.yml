@@ -1,0 +1,65 @@
+---
+Here's a simple Ansible playbook to check the status of Apache HTTP server (httpd) service and ensure it is running, and also test if port 80 is accessible.
+
+yml
+---
+- name: Check httpd service status and port accessibility
+  hosts: 192.168.1.100
+  become: yes
+
+  tasks:
+  - name: Ensure httpd service is running
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+
+  - name: Test if port 80 is accessible
+    uri:
+      url: http://localhost/
+      method: GET
+      status: 200
+    register: result
+
+  - name: Report the outcome of accessing port 80
+    debug:
+      var: result
+
+
+However, to make it more robust and suitable for a production environment, we can add error handling and test if the service is running before trying to access port 80.
+
+yml
+---
+- name: Check httpd service status and port accessibility
+  hosts: 192.168.1.100
+  become: yes
+
+  tasks:
+  - name: Ensure httpd service is running
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+    register: result_httpd
+
+  - name: Test if port 80 is accessible after ensuring httpd is running
+    uri:
+      url: http://localhost/
+      method: GET
+      status: 200
+    when: result_httpd.state == 'started'
+    register: result_port_80
+    ignore_errors: yes
+
+  - name: Report the outcome of accessing port 80 and httpd service status
+    debug:
+      var: result_httpd
+      msg: "httpd service is {{ result_httpd.state }}"
+
+  - name: Display error if port 80 could not be accessed after ensuring httpd was running
+    fail:
+      msg: "Port 80 is inaccessible even though httpd service is running"
+    when: (result_port_80.status != 200) and (result_httpd.state == 'started')
+
+
+These playbooks check the status of the `httpd` service, then attempt to access port 80 if the service is running. If both checks pass, it reports successful execution. However, if port 80 cannot be accessed after ensuring `httpd` is up and running, it fails with a message indicating that there's an issue.
