@@ -1,0 +1,40 @@
+---
+Here's a well-structured Ansible playbook to troubleshoot the issue:
+
+
+---
+- name: Troubleshoot Apache HTTPD service
+  hosts: [ '192.168.1.100' ]
+  gather_facts: yes
+
+  vars:
+    httpd_service_name: httpd
+    httpd_port: 80
+
+  tasks:
+  - name: Check if httpd service is running
+    service:
+      name: "{{ httpd_service_name }}"
+      state: started
+    register: httpd_status
+
+  - name: Check if port {{ httpd_portHere's a well-structured Ansible playbook to troubleshoot the issue:
+
+
+---
+- name: Troubleshoot Apache HTTPD service
+  hosts: [ '192.168.1.100' ]
+  gather_facts: yes
+
+  vars:
+    httpd_service_name: httpd
+    httpd_port: 80
+
+  tasks:
+  - name: Check if httpd service is running
+    service:
+      name: "{{ httpd_service_name }}"
+      state: started
+    register: httpd_status
+
+  - name: Check if port {{ httpd_port
