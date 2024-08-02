@@ -1,0 +1,57 @@
+---
+Here's a sample Ansible playbook to check the status of Apache HTTP Server (httpd) service on host 192.168.1.100, start it if necessary, and ensure port 80 is open:
+
+**incident_response.yml**
+
+---
+- name: Respond to incident report - httpd stopped and port 80 inaccessible
+  hosts: 192.168.1.100
+
+  tasks:
+  - name: Check status of Apache HTTP Server service
+    service:
+      name: httpd
+      state: started
+    register: httpd_status
+
+  - name: Ensure port 80 is open
+    ufw:
+      rule: allow
+      proto: tcp
+      port: 80
+
+  - name: Check if port 80 is accessible
+    uri:
+      url: http://localhost/
+      status_code: 200
+    register: httpd_accessible
+
+  - name: Start Apache HTTP Server service if necessary
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+    when: httpd_status.state != 'running'
+
+  - name: Restart Apache HTTP Server service to ensure port 80 is accessible
+    service:
+      name: httpd
+      state: restarted
+    when: httpd_accessible is defined and httpd_accessible.status_code == 500
+
+  - name: Check if port 80 is still inaccessible (should not be the case after restart)
+    uri:
+      url: http://localhost/
+      status_code: 200
+    register: httpd_accessible_after_restart
+
+This playbook performs the following:
+
+1. Checks the status of Apache HTTP Server service on the host.
+2. Ensures that port 80 is open using UFW (Uncomplicated Firewall).
+3. Verifies if port 80 is accessible by making a GET request to `http://localhost/`.
+4. Starts the Apache HTTP Server service if it's not running.
+5. If the previous step fails and port 80 remains inaccessible, restarts the Apache HTTP Server service to ensure it's up and running correctly.
+6. Performs another check to verify that port 80 is accessible after restarting the service.
+
+You can run this playbook using Ansible: `ansible-playbook -i hosts incident_response.yml`
