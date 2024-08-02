@@ -1,0 +1,70 @@
+---
+Here's a playbook that will check if httpd service is running, start it if necessary, and also ensure port 80 is accessible:
+
+yml
+---
+- name: Ensure httpd service is running and port 80 is accessible
+  hosts: 192.168.1.100
+  gather_facts: yes
+
+  tasks:
+  - name: Check if httpd service is running
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+    register: httpd_status
+
+  - name: Start httpd service if it's not running
+    service:
+      name: httpd
+      state: started
+    when: httpd_status.state != 'started'
+
+  - name: Ensure port 80 is accessible using a simple TCP connection
+    uri:
+      url: http://localhost:80
+      method: GET
+      status_code: 200
+
+  - name: Test if the web server is responding with some content
+    uri:
+      url: http://localhost:80
+      method: GET
+      return_content: yes
+
+
+This playbook assumes that Ansible is running on a control node which can reach the target host (192.168.1.100) over SSH.
+
+However, if you need to check the status of HTTP port 80 from an external perspective, you might want to use `uri` module with a different approach:
+
+yml
+---
+- name: Ensure httpd service is running and port 80 is accessible from outside
+  hosts: 192.168.1.100
+  gather_facts: yes
+
+  tasks:
+  - name: Check if httpd service is running
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+    register: httpd_status
+
+  - name: Start httpd service if it's not running
+    service:
+      name: httpd
+      state: started
+    when: httpd_status.state != 'started'
+
+  - name: Test if port 80 is accessible from outside using a simple TCP connection
+    uri:
+      url: http://{{ inventory_hostname }}:80
+      method: GET
+      status_code: 200
+
+
+This second playbook assumes that Ansible has access to the target host (192.168.1.100) over SSH and can use its own IP as a remote connection for the HTTP test.
+
+Please ensure you are running this on an environment where it's acceptable to send requests to http://localhost:80 or your own IP address.
