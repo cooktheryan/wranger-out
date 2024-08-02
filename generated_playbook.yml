@@ -1,0 +1,25 @@
+---
+yml
+---
+- name: Create new Incident
+  hosts: localhost
+  gather_facts: no
+  vars:
+    incident_title: "New Incident Created"
+    incident_description: "User 4goukneszr3x successfully created a new incident!"
+  tasks:
+  - name: Create new incident
+    uri:
+      url: https://your-incident-management-api.com/incidents/
+      method: POST
+      body:
+        title: "{{ incident_title }}"
+        description: "{{ incident_description }}"
+      headers:
+        Content-Type: "application/json"
+        Authorization: "Bearer your-auth-token"
+    register: response
+
+  - name: Print the new incident ID
+    debug:
+      var: response.json.id
