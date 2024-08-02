@@ -1,0 +1,71 @@
+---
+---
+- name: VMware Host Downplaybook
+  hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Check if the host is down
+      ping:
+        hostname: "192.168.1.100"
+      register: result
+
+    - name: Notify VMware of host down status
+      debug:
+        msg: "{{ result }}"
+
+    - name: Gather facts about the host
+      setup:
+      tags: always
+
+    - name: Get VMWare API credentials
+      uri:
+        url: "https://{{ lookup('env','VMWARE_HOST') }}/api/session/login"
+        method: POST
+        body: '{"username": "{{ lookup('env', 'VMWARE_USER') }}", "password": "{{ lookup('env', 'VMWARE_PASSWORD') }}" }'
+        status_code: 200
+      register: session
+
+    - name: Get the host's power state
+      uri:
+        url: "https://{{ lookup('env','VMWARE_HOST') }}/api/extension/datacenter/host/{{ inventory_hostname }}?vmware.api.token={{ session.json.result.token }}"
+        method: GET
+        headers:
+          VMware-api-token: "{{ session.json.result.token }}"
+        status_code: 200
+      register: power_state
+
+    - name: Notify VMware of host down status
+      debug:
+        msg: "Host {{ inventory_hostname }} is DOWN"
+
+    - name: Power off the host if it's still on
+      uri:
+        url: "https://{{ lookup('env','VMWARE_HOST') }}/api/extension/datacenter/host/{{ inventory_hostname }}/power?vmware.api.token={{ session.json.result.token }}"
+        method: POST
+        headers:
+          VMware-api-token: "{{ session.json.result.token }}"
+          Content-Type: application/json
+        body: '{"power_action": "POWER_OFF"}'
+      when: power_state.json.result.powerState == 'poweredOn'
+
+    - name: Power on the host if it's not powered off
+      uri:
+        url: "https://{{ lookup('env','VMWARE_HOST') }}/api/extension/datacenter/host/{{ inventory_hostname }}/power?vmware.api.token={{ session.json.result.token }}"
+        method: POST
+        headers:
+          VMware-api-token: "{{ session.json.result.token }}"
+          Content-Type: application/json
+        body: '{"power_action": "POWER_ON"}'
+      when: power_state.json.result.powerState != 'poweredOff'
+
+    - name: Wait for the host to power off or on
+      uri:
+        url: "https://{{ lookup('env','VMWARE_HOST') }}/api/extension/datacenter/host/{{ inventory_hostname }}?vmware.api.token={{ session.json.result.token }}"
+        method: GET
+        headers:
+          VMware-api-token: "{{ session.json.result.token }}"
+        status_code: 200
+      register: host_status
+      until: host_status.json.result.powerState == 'poweredOff' or host_status.json.result.powerState == 'poweredOn'
+      retries: 120
