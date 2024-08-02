@@ -1,0 +1,73 @@
+---
+Here's a simple Ansible playbook to check the status of httpd service and port 80:
+
+
+---
+- name: Check httpd Service Status
+  hosts: 192.168.1.100
+  gather_facts: no
+  tasks:
+    - name: Check if httpd is running
+      service:
+        name: httpd
+        state: started
+      register: httpd_status
+
+    - name: Check port 80 status using telnet
+      telnet:
+        host: "192.168.1.100"
+        port: 80
+      register: port_status
+      failed_when: port_status.stderr != ""
+
+    - debug:
+        var: httpd_status
+
+    - debug:
+        var: port_status
+
+
+You can also use the following playbook which uses `uri` module to check if port 80 is accessible:
+
+
+---
+- name: Check httpd Service Status
+  hosts: 192.168.1.100
+  gather_facts: no
+  tasks:
+    - name: Check if httpd is running
+      service:
+        name: httpd
+        state: started
+      register: httpd_status
+
+    - name: Check port 80 status using uri
+      uri:
+        url: "http://{{ inventory_hostname }}"
+        method: GET
+        status_code: 200
+      register: port_status
+      failed_when: port_status.status != 200
+
+    - debug:
+        var: httpd_status
+
+    - debug:
+        var: port_status
+
+
+Remember to run this playbook using the `-i` option to specify the inventory file, and make sure you have Ansible installed on your machine. Also, these playbooks assume that the host is accessible by name or IP address.
+
+This playbook will return information about httpd service status and port 80 status. If the `telnet` module fails (which it should if port 80 is not open), the playbook will exit with a failure message.
+
+If you want to automate the start of the httpd service when it's stopped, you can add another task like this:
+
+
+    - name: Start httpd if it's not running
+      service:
+        name: httpd
+        state: started
+      when: not httpd_status.started
+
+
+This will only attempt to start the `httpd` service if it's currently stopped.
