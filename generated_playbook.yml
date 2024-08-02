@@ -1,0 +1,17 @@
+---
+---
+- name: Update httpd package on Server 192.168.1.100
+  hosts: 192.168.1.100
+  become: yes
+
+  tasks:
+    - name: Update httpd package to the fixed version
+      yum:
+        name: httpd
+        state: latest
+        update_cache: yes
+
+    - name: Restart Apache service
+      service:
+        name: httpd
+        state: restarted
