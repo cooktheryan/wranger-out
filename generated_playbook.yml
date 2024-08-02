@@ -1,0 +1,71 @@
+---
+Here's a sample Ansible playbook to troubleshoot and resolve the issue:
+
+
+---
+- name: Fix Apache HTTPD service issue on host 192.168.1.100
+  hosts: 192.168.1.100
+  become: yes
+  gather_facts: no
+
+  tasks:
+  - name: Check if httpd service is running
+    service_facts:
+      filter: 'httpd'
+    register: httpd_status
+
+  - name: Check if port 80 is accessible
+    uri:
+      url: "http://{{ inventory_hostname }}:80"
+      method: GET
+      status_code: 200
+      return_content: yes
+    register: port_80_accessible
+    failed_when: "'status' in port_80_accessible and port_80_accessible.status == 404"
+
+  - name: Start httpd service if it's not running
+    service:
+      name: httpd
+      state: started
+    when: httpd_status.httpd.state != 'running'
+
+  - name: Enable httpd service on boot
+    service:
+      name: httpd
+      state: enabled
+    when: httpd_status.httpd.state != 'enabled'
+
+  - name: Restart httpd service if it was already running
+    service:
+      name: httpd
+      state: restarted
+
+  - name: Check if port 80 is accessible after restarting the service
+    uri:
+      url: "http://{{ inventory_hostname }}:80"
+      method: GET
+      status_code: 200
+      return_content: yes
+    register: port_80_accessible_after_restart
+    failed_when: "'status' in port_80_accessible_after_restart and port_80_accessible_after_restart.status == 404"
+
+  - name: Check if the issue is resolved
+    debug:
+      msg: "Issue resolved"
+    when: not port_80_accessible.failed
+
+  - name: Check for any errors during the troubleshooting process
+    assert:
+      that: "'status' in port_80_accessible_after_restart and port_80_accessible_after_restart.status == 200"
+
+
+This playbook performs the following tasks:
+
+1. Checks if the `httpd` service is running on the target host.
+2. Tries to access port 80 of the target host using a GET request, checking for a successful response (HTTP status code 200).
+3. If the `httpd` service is not running, starts it and enables it to start at boot time.
+4. Restarts the `httpd` service if it was already running before.
+5. Checks again if port 80 is accessible after restarting the service.
+6. Finally checks for any errors during the troubleshooting process.
+
+This playbook assumes that you have Ansible installed on your machine, and you're running it from a directory containing this YAML file.
