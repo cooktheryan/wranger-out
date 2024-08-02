@@ -1,0 +1,51 @@
+---
+Here's a playbook that checks if httpd service is running, starts it if it's not running, and checks if port 80 is accessible.
+
+
+---
+- name: Start httpd service on host 192.168.1.100
+  hosts: 192.168.1.100
+  gather_facts: yes
+
+  tasks:
+    - name: Check if httpd service is running
+      service:
+        name: httpd
+        state: started
+      register: result
+
+    - name: Start httpd service if it's not running
+      service:
+        name: httpd
+        state: started
+      when: result.stat != 0
+
+    - name: Check if port 80 is accessible
+      uri:
+        url: http://localhost/
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: response
+
+    - name: Print the content of the webpage on host 192.168.1.100
+      debug:
+        msg: "{{ response.content }}"
+      when: response.status == 200
+
+
+You can save this playbook as `start_httpd.yml` and then run it with:
+
+bash
+ansible-playbook -i hosts start_httpd.yml
+
+Replace `hosts` file with your inventory file.
+
+This playbook does the following:
+
+1. It checks if httpd service is running by calling Ansible's `service` module.
+2. If the service is not running, it starts it.
+3. Then it checks if port 80 is accessible using Ansible's `uri` module by sending a GET request to `http://localhost/`.
+4. If the request returns a status code of 200, it prints the content of the webpage on host 192.168.1.100.
+
+The playbook uses the `register` parameter in the first task to store the result of checking if httpd service is running. Then, in the second task, it uses the `when` clause to start the service only if it's not running (i.e., when `result.stat != 0`).
