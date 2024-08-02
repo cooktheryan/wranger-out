@@ -1,0 +1,22 @@
+---
+yml
+---
+- name: Apply patch RHSA-2024:4197
+  hosts: 192.168.1.100
+  become: true
+
+  tasks:
+  - name: Update package list
+    ansible.builtin.package:
+      name: httpd
+      state: latest
+
+  - name: Install security update
+    ansible.builtin.yum:
+      name: httpd-2.4.52-1.el8_6.1
+      state: present
+
+  - name: Restart Apache service
+    ansible.builtin.service:
+      name: httpd
+      state: restarted
