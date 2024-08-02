@@ -1,0 +1,46 @@
+---
+Here's a sample Ansible playbook to troubleshoot the issue:
+
+**playbook.yml**
+
+---
+- name: Troubleshoot HTTPD service on host 192.168.1.100
+  hosts: 192.168.1.100
+  become: yes
+
+  tasks:
+    - name: Check if httpd is running
+      service_facts:
+        name: httpd
+      register: httpd_status
+
+    - name: Check if port 80 is accessible
+      uri:
+        url: "http://{{ inventory_hostname }}:80"
+        return_content: yes
+      register: port_80_accessible
+
+    - name: Report on service status and accessibility of port 80
+      debug:
+        var: httpd_status | combine(port_80_accessible._content)
+
+    - name: Start the httpd service if it's not running
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: Restart the network service to ensure changes take effect
+      service:
+        name: network
+        state: restarted
+
+This playbook uses Ansible's built-in modules to:
+
+1. Gather facts about the `httpd` service.
+2. Check if port 80 is accessible using a simple HTTP request.
+3. Report on both the service status and accessibility of port 80.
+4. If necessary, start the `httpd` service and enable it for future boots.
+5. Restart the network service to ensure any changes take effect.
+
+You can run this playbook by executing `ansible-playbook -i hosts playbook.yml` (assuming you have a file named `hosts` containing the IP address of the host) or with other options as needed.
