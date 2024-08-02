@@ -1,0 +1,57 @@
+---
+Here's a well-documented Ansible playbook to troubleshoot and fix the issue:
+
+**playbook.yml**
+
+---
+- name: Troubleshoot and Fix HTTPD Service on Host 192.168.1.100
+  hosts: 192.168.1.100
+  become: yes
+
+  tasks:
+    - name: Check if httpd service is running
+      service_facts:
+        name: httpd
+      register: httpd_status
+
+    - name: Debug httpd status
+      debug:
+        var=httpd_status
+
+    - name: Restart httpd service
+      service:
+        name: httpd
+        state: restarted
+
+    - name: Check if port 80 is accessible
+      uri:
+        url: http://192.168.1.100/
+        method: GET
+      register: port_80_status
+
+    - name: Debug port 80 status
+      debug:
+        var=port_80_status
+
+    - name: Reload firewall rules to allow incoming traffic on port 80
+      firewalld:
+        service: http
+        permanent: yes
+        state: enabled
+
+This playbook performs the following tasks:
+
+1. Checks if the `httpd` service is running using `service_facts`.
+2. Displays the status of the `httpd` service for debugging purposes.
+3. Restarts the `httpd` service to ensure it's running correctly.
+4. Checks if port 80 is accessible by sending a GET request to `http://192.168.1.100/`.
+5. Displays the result of the port 80 check for debugging purposes.
+6. Reloads the firewall rules to allow incoming traffic on port 80.
+
+**Run the playbook**
+
+To run this playbook, navigate to the directory containing the `playbook.yml` file and execute the following command:
+bash
+ansible-playbook -i hosts playbook.yml
+
+Replace `hosts` with your inventory file if it's not named as `hosts`.
