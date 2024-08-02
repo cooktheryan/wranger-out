@@ -1,0 +1,27 @@
+---
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Ensure httpd package is present and updated
+      yum:
+        name: httpd
+        state: latest
+
+    - name: Check if httpd service is running and restart if needed
+      systemd:
+        name: httpd
+        state: restarted
+        enabled: yes
+
+    - name: Verify httpd configuration file and update if needed
+      copy:
+        src: /path/to/updated/httpd.conf
+        dest: /etc/httpd/conf/httpd.conf
+      notify: restart httpd service
+
+  handlers:
+    - name: restart httpd service
+      systemd:
+        name: httpd
+        state: restarted
