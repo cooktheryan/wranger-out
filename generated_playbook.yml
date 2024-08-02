@@ -1,0 +1,13 @@
+---
+- name: Ensure httpd service is running and port 80 is accessible
+  hosts: 192.168.1.100
+  tasks:
+    - name: Start httpd service
+      service:
+        name: httpd
+        state: started
+    
+    - name: Check if port 80 is accessible
+      wait_for:
+        port: 80
+        state: started
