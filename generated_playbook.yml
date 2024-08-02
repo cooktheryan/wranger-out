@@ -1,0 +1,98 @@
+---
+Here's a well-structured Ansible playbook to troubleshoot the issue:
+
+**incident_playbook.yml**
+
+---
+- name: Troubleshoot Apache HTTPD service on host 192.168.1.100
+  hosts: 192.168.1.100
+  become: yes
+
+  tasks:
+  - name: Check if httpd service is running
+    service_facts:
+      name: httpd
+    register: httpd_service_status
+
+  - name: Verify port 80 accessibility using netstat
+    shell: "netstat -tlnp | grep :80"
+    register: netstat_output
+
+  - name: Check system logs for any error messages related to httpd
+    shell: "journalctl -u httpd -n 100"
+    register: journalctl_output
+
+  - name: Debug and restart httpd service if necessary
+    service:
+      name: httpd
+      state: restarted
+    when: httpd_service_status.state == 'stopped'
+
+  - name: Verify port 80 accessibility after restarting httpd
+    uri:
+      url: "http://localhost:80"
+      status_code: 200
+
+  - name: Gather and report findings to the incident commander
+    debug:
+      msg: "Findings:"
+      var: {
+        httpd_service_status: "{{ httpd_service_status | dict }}"
+        netstat_output: "{{ netstat_output.stdout_lines }}"
+        journalctl_output: "{{ journalctl_output.stdout_lines }}"
+      }
+
+Let me explain what each task does:
+
+1. `Check if httpd service is running`: We use the `service_facts` module to gather facts about the `httpd` service, including its current state.
+2. `Verify port 80 accessibility using netstat`: We run a shell command to check if port 80 is listening on the system using `netstat`. The output is stored in the `netstat_output` variable.
+3. `Check system logs for any error messages related to httpd`: We use `journalctl` to search for any recent errors related to the `httpd` service.
+4. `Debug and restart httpd service if necessary`: If the `httpd` service isHere's a well-structured Ansible playbook to troubleshoot the issue:
+
+**incident_playbook.yml**
+
+---
+- name: Troubleshoot Apache HTTPD service on host 192.168.1.100
+  hosts: 192.168.1.100
+  become: yes
+
+  tasks:
+  - name: Check if httpd service is running
+    service_facts:
+      name: httpd
+    register: httpd_service_status
+
+  - name: Verify port 80 accessibility using netstat
+    shell: "netstat -tlnp | grep :80"
+    register: netstat_output
+
+  - name: Check system logs for any error messages related to httpd
+    shell: "journalctl -u httpd -n 100"
+    register: journalctl_output
+
+  - name: Debug and restart httpd service if necessary
+    service:
+      name: httpd
+      state: restarted
+    when: httpd_service_status.state == 'stopped'
+
+  - name: Verify port 80 accessibility after restarting httpd
+    uri:
+      url: "http://localhost:80"
+      status_code: 200
+
+  - name: Gather and report findings to the incident commander
+    debug:
+      msg: "Findings:"
+      var: {
+        httpd_service_status: "{{ httpd_service_status | dict }}"
+        netstat_output: "{{ netstat_output.stdout_lines }}"
+        journalctl_output: "{{ journalctl_output.stdout_lines }}"
+      }
+
+Let me explain what each task does:
+
+1. `Check if httpd service is running`: We use the `service_facts` module to gather facts about the `httpd` service, including its current state.
+2. `Verify port 80 accessibility using netstat`: We run a shell command to check if port 80 is listening on the system using `netstat`. The output is stored in the `netstat_output` variable.
+3. `Check system logs for any error messages related to httpd`: We use `journalctl` to search for any recent errors related to the `httpd` service.
+4. `Debug and restart httpd service if necessary`: If the `httpd` service is
