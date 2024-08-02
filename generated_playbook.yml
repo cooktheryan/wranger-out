@@ -1,0 +1,22 @@
+---
+yml
+---
+- name: Apply RHSA-2024:4197 patch for httpd:2.4 module
+  hosts: 192.168.1.0
+  become: true
+  
+  tasks:
+    - name: Update package cache
+      yum:
+        name: '*'
+        state: latest
+
+    - name: Install the update
+      yum:
+        name: httpd:2.4
+        state: latest
+
+    - name: Restart Apache HTTP Server
+      service:
+        name: httpd
+        state: restarted
