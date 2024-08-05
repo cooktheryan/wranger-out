@@ -1,0 +1,9 @@
+---
+- name: Update httpd package on servers in development environment
+  hosts: development
+  tasks:
+    - name: Update httpd package
+      yum:
+        name: httpd
+        state: latest
+      become: yes
