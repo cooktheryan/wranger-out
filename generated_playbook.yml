@@ -1,0 +1,10 @@
+---
+- name: Update httpd:2.4 package on all servers in development environment
+  hosts: development_servers
+  become: yes
+
+  tasks:
+    - name: Update httpd package to the latest version
+      yum:
+        name: httpd
+        state: latest
