@@ -1,0 +1,15 @@
+---
+- name: Update httpd package on development servers
+  hosts: development
+  tasks:
+    - name: Ensure httpd package is installed and up to date
+      yum:
+        name: httpd
+        state: latest
+      when: ansible_facts.packages['httpd'] is defined
+
+    - name: Restart httpd service
+      systemd:
+        name: httpd
+        state: restarted
+      when: ansible_facts.packages['httpd'] is defined
